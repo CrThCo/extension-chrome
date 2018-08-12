@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "name": "Connect",
+  "version": "1.0",
+  "description": "Super alpha extension!",
+  "icons": {
+    "128": "img/brand/128.png",
+    "48": "img/brand/48.png",
+    "16": "img/brand/16.png"
+  },
+  "browser_action": {
+    "default_icon": "img/brand/16.png",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "background": {
+    "scripts": ["js/lib/jquery-3.3.1.min.js","js/helper_library.js","js/background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*"],
+      "js": ["js/lib/jquery-3.3.1.min.js","js/settings.js","js/helper_library.js", "js/content_script.js"]
+    }
+  ],
+  "permissions": [
+    "storage",
+    "notifications",
+    "contextMenus",
+    "tabs",
+    "activeTab",
+    "<all_urls>"
+  ]
+}

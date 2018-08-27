@@ -1,6 +1,6 @@
 $(function(){
 
-  chrome.storage.sync.set({'API': 'http://localhost:8030/v1/'}, function() {})
+  chrome.storage.sync.set({'API': 'http://localhost:5000/v1/'}, function() {})
   GetUserDetail()
   
   $('#profile').on('click','#unlinkAccount', function(e) {
@@ -19,11 +19,14 @@ $(function(){
       password: $('input[name="password"').val()
     }    
     settings.get('API', function(r) {      
-      var url =  `${r.API}user/login`
+      var url =  `${r.API}user/signin`
       $.ajax({
         url: url,
         data: JSON.stringify(loginData),
         method: 'POST',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader('Content-Type', `application/json`)
+        },
         success: function(res){
           if (res.token != undefined) {
             chrome.storage.sync.set({'authtoken': res.token}, function() {

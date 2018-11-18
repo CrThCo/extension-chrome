@@ -14,14 +14,15 @@
   },
   "options_page": "options.html",
   "background": {
-    "scripts": ["js/lib/jquery-3.3.1.min.js","js/helper_library.js","js/background.js"]
+    "scripts": ["js/lib/jquery-3.3.1.min.js", "js/lib/web3.min.js" ,"js/helper_library.js","js/background.js"]
   },
   "content_scripts": [
     {
       "matches": ["https://twitter.com/*"],
-      "js": ["js/lib/jquery-3.3.1.min.js","js/settings.js","js/helper_library.js", "js/content_script.js"]
+      "js": ["js/lib/jquery-3.3.1.min.js", "js/lib/web3.min.js","js/lib/mmprovider.js","js/settings.js","js/helper_library.js", "js/content_script.js"]
     }
   ],
+  "web_accessible_resources": ["js/*.js"],
   "permissions": [
     "storage",
     "notifications",

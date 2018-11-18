@@ -1,8 +1,26 @@
 window.onload = function () {
+
+  // function injectScript(file, node) {
+  //   var th = document.getElementsByTagName(node)[0];
+  //   var s = document.createElement('script');
+  //   s.setAttribute('type', 'text/javascript');
+  //   s.setAttribute('src', file);
+  //   th.appendChild(s);
+  // }
+  // injectScript( chrome.extension.getURL('/js/lib/mmprovider.js'), 'body');
+  // injectScript( chrome.extension.getURL('/js/content_script.js'), 'body');
+
+  
+  
+
   chrome.runtime.onMessage.addListener(function (r, s, sr) {
     sr({
-      text: 'Thanks received!'
+      text: `Thanks ${r.action} received! `
     })
+    if (r.action === "web3") {
+      // window.web3 = r.obj
+      return
+    }    
     $(`#connect_${r.target}`).html('')
     var canvas = document.getElementById('image');
     var context = canvas.getContext('2d');
@@ -63,12 +81,16 @@ window.onload = function () {
 
   $('body').append(connectStyle())
   $(function () {
-    setInterval(function () {      
-      // Stream
+      setInterval(function () {      
+        // Stream
+        findActionsOfStreamItems()
+        // Status
+        findActionsOfStatusPupup()     
+      }, 10000)      
+
       findActionsOfStreamItems()
-      // Status
-      findActionsOfStatusPupup()     
-    }, 2000)
+      findActionsOfStatusPupup()
+
 
     $('body').on('click', 'div.connect-modal-close', function () {
       $('div.connect-model-overlay').remove()

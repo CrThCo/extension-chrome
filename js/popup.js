@@ -1,5 +1,5 @@
 $(function(){
-
+  
   chrome.storage.sync.set({'API': 'http://localhost:5000/v1/'}, function() {})
   GetUserDetail()
   
@@ -14,6 +14,7 @@ $(function(){
 
   $("#singin-form").on('submit', function(e){
     e.preventDefault()
+    $("#error").html('')
     var loginData = {
       email: $('input[name="email"]').val(),
       password: $('input[name="password"').val()
@@ -31,8 +32,9 @@ $(function(){
           if (res.token != undefined) {
             chrome.storage.sync.set({'authtoken': res.token}, function() {
             })
-            $('#singin-form').hide()
+            
             $("#error").html("<div class='alert alert-success'>Login successful!</div>")
+            $("#singin-form").hide()
             GetUserDetail()
           } else {
             $("#error").html("<div class='alert alert-error'>Error! invalid credentials!</div>")

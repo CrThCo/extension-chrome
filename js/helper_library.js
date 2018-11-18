@@ -1,67 +1,119 @@
 function DecodeJWTToken(token) {
-  try{
+  try {
     return JSON.parse(atob(token.split('.')[1]))
-  }catch(err) {
+  } catch (err) {
     console.log(err)
   }
   return undefined
 }
+
 function unixDate(unixtime) {
   return new Date(unixtime * 1000);
 }
 
+const provider = mmprovider()
+
+provider.on('error', function(err) {
+  console.log('MM Error ', err)
+})
+
+var web3Instance = null
+
+function GetWeb3() {
+  if (web3Instance === null) {
+    if (provider) {
+      web3 = new Web3(provider);
+    } else {
+      web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
+    }
+    try {
+      web3.eth.defaultAccount = web3.eth.accounts[0];
+      web3Instance = web3
+    } catch (err) {
+      console.log(err)
+    }
+  }
+  return web3
+}
+
+
+
+function GetContract() {
+  const web3 = GetWeb3()
+  const contract = web3.eth.contract([{"constant":true,"inputs":[{"name":"hash","type":"bytes32"}],"name":"getDocument","outputs":[{"name":"","type":"address"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"hash","type":"bytes32"},{"name":"timestamp","type":"uint256"},{"name":"username","type":"string"}],"name":"newDoc","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"username","type":"string"},{"indexed":true,"name":"hash","type":"bytes32"}],"name":"DOCSAVE","type":"event"}]);
+  return contract.at('0x6f99168c3ACDaADDd55E58fB3A4c0063479D3Bcc');
+}
+
+function SignDoc(hash, timestamp, username, cb) {
+  try {
+    console.log('signing document')
+    const instance = GetContract()
+    instance.newDoc(hash, timestamp, username, function (err, result) {
+      cb(err, result);
+    })
+  } catch(err){
+    console.log(err)
+  }
+}
+
 
 function GetUserDetail() {
-  chrome.storage.sync.get(['authtoken', 'API'], function(r){
-    var d =  DecodeJWTToken(r.authtoken)
-    if (d.sub !== undefined ) {
-      $.ajax({
-        url: `${r.API}user/${d.sub}`,
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader('Authorization', `Bearer ${r.authtoken}`)
-        },
-        success: function(res) {
-          console.log(res)
-          var p = `
-            <p><span class="d-block lheaidng">Connected Account:</span> ${res.first_name} ${res.last_name} @${res.username}</p>
-            <p><button id="unlinkAccount" class="link ls-1 t-up">Unlink your account!</button></p>
-          `
-          $('#profile').html(p)
-          $('#profile').show()
-          $('#singin-form').hide()
-        },
-        error: function(err) {
-          $('#profile').hide()
-          $('#singin-form').show()
-        }
-      })
-    }
-  })
+  setTimeout(function () {
+    
+    chrome.storage.sync.get(['authtoken', 'API'], function (r) {
+      var d = DecodeJWTToken(r.authtoken)
+      if (typeof d != 'undefined' && d.sub !== undefined) {
+        $.ajax({
+          url: `${r.API}user/i/${d.sub}`,
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', `Bearer ${r.authtoken}`)
+          },
+          success: function (res) {
+            $('#error').html("")
+            var p = `
+              <p><span class="d-block lheaidng">Connected Account:</span> ${res.first_name} ${res.last_name} @${res.username}</p>
+              <p><button id="unlinkAccount" class="link ls-1 t-up">Unlink your account!</button></p>
+            `
+            $('#profile').html(p)
+            $('#profile').show()
+            $('#singin-form').hide()
+          },
+          error: function (err) {
+            $('#profile').hide()
+            $('#error').html("<div class='alert alert-error'>Error occured while fetching user information!</div>")
+            $('#singin-form').show()
+          }
+        })
+      }
+    })
+  }, 500);
 }
 
 function refreshAuthToken() {
-  chrome.storage.sync.get(['authtoken', 'API'], function(r){
+  chrome.storage.sync.get(['authtoken', 'API'], function (r) {
     if (r.authtoken.length > 0) {
       $.ajax({
         url: `${r.API}user/token/refresh`,
-        beforeSend: function(xhr) {
+        beforeSend: function (xhr) {
           xhr.setRequestHeader('Authorization', `Bearer ${r.authtoken}`)
         },
         success: function (res) {
-          chrome.storage.sync.set({'authtoken': res.token}, function() {})
+          chrome.storage.sync.set({
+            'authtoken': res.token
+          }, function () {})
         },
         error: function (err) {
           console.log(err)
         }
       })
-  }
-    
+    }
+
   })
 }
 
 
 function connectElement(id) {
-  var c = 'data:image/png;base64,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'
+  var c = 'data:image/png;base64,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'
   const imgElement = document.createElement('img')
   imgElement.setAttribute('src', c)
   imgElement.width = 18
@@ -77,9 +129,9 @@ function connectElement(id) {
     const self = $(this)
     self.hide()
     const target = self.attr('data-target')
-    
+
     let offset = 50
-    if($('.ProfileCanopy--withNav').length > 0) {
+    if ($('.ProfileCanopy--withNav').length > 0) {
       offset = 135
     }
     const t = $(`[data-item-id="${target}"]`)
@@ -106,7 +158,7 @@ function connectElement(id) {
       .find('span.username')
       .text()
 
-    
+
     const signedBy = $('.DashUserDropdown')
       .find('ul')
       .find('li.DashUserDropdown-userInfo')
@@ -115,21 +167,22 @@ function connectElement(id) {
       .find('span.username')
       .text()
 
-   setTimeout(function () {
-      const ee = t.get(0).getBoundingClientRect()
+    setTimeout(function () {
+      const ee = t.get(0).getBoundingClientRect()     
+
       chrome.runtime.sendMessage({
         action: "capture",
         target: target,
         meta: {
           height: ee.height,
-          width: ee.width-3,
-          left: ee.left+3,
+          width: ee.width - 3,
+          left: ee.left + 3,
           top: ee.top
         }
       }, function (response) {
 
         showModel(target, {
-          height: ee.height -1,
+          height: ee.height - 1,
           width: ee.width - 5,
           tweetBy: tweetBy,
           signedBy: signedBy,
@@ -145,57 +198,75 @@ function connectElement(id) {
   return element
 }
 
-$("body").on('submit', '#cf-vote-form', function(e){
+$("body").on('submit', '#cf-vote-form', function (e) {
   e.preventDefault();
-  try{
+
+  
+
+  try {
     var self = $(this)
     $('#options-table').hide()
     $('#action-btn').hide()
     $('#action-text').show()
     $('#action-text').html(`<span class="cf-loading">Please wait...</span>`)
-    chrome.storage.sync.get(['authtoken', 'API'], function(r){
-      const img = $('.captued_content #image').get(0).toDataURL('image/jpeg')
+    const img = $('.captued_content #image').get(0).toDataURL('image/jpeg')
+    const captured_image = img.replace('data:image/jpeg;base64,', '')
+    const hash = md5(captured_image)
+    const now = new Date().getTime()
+
+    SignDoc(hash, now, "test001", function(err, success) {
+      if (err) 
+        console.log(err)
+      else 
+        console.log(success)
+    })
+
+    chrome.storage.sync.get(['authtoken', 'API'], function (r) {
       $.ajax({
         url: `${r.API}post/save`,
         method: 'POST',
         contentType: 'application/json; charset=utf-8',
-        beforeSend: function(xhr) {
+        beforeSend: function (xhr) {
           xhr.setRequestHeader('Authorization', `Bearer ${r.authtoken}`)
         },
-        data:   JSON.stringify({
+        data: JSON.stringify({
           options: self.serializeArray(),
           content: '',
-          image: img.replace('data:image/jpeg;base64,','')
+          image: captured_image,
+          hash: hash
         }),
         success: function (res) {
           $('#action-text').html(`<span class="cf-success">Saved successfully!</span>`)
-          setTimeout(function(){
-            $('div.connect-model-overlay').remove()     
+          setTimeout(function () {
+            $('div.connect-model-overlay').remove()
           }, 5000)
-        }, error: function(err) {
+        },
+        error: function (err) {          
           $('#action-text').html(`<span class="cf-error">Error occured!</span>`)
-          setTimeout(function(){
+          setTimeout(function () {
             $('#options-table').show()
             $('#action-text').html(``)
             $('#action-text').hide()
-            $('#action-btn').show()        
+            $('#action-btn').show()
           }, 5000)
         }
       })
     })
-  } catch(err){
+  } catch (err) {
+    console.log(err)
     $('#action-text').html(`<span class="cf-error">Error occured! Please reload page and try again!</span>`)
-      setTimeout(function(){
-        $('#options-table').show()
-        $('#action-text').html(``)
-        $('#action-text').hide()
-        $('#action-btn').show()        
-      }, 5000)
+    setTimeout(function () {
+      $('#options-table').show()
+      $('#action-text').html(``)
+      $('#action-text').hide()
+      $('#action-btn').show()
+    }, 5000)
   }
 })
 
 
 function showModel(target, meta) {
+  const inst = GetWeb3()
   const t = `connect_${target}`
   const modelHtml = `
     <div class="connect-model-overlay">

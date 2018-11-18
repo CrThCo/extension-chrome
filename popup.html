@@ -2,26 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Connect application options</title>
   <link rel="stylesheet" type="text/css" href="css/style.css" >
   <script src="js/lib/jquery-3.3.1.min.js"></script>
+  <script src="js/lib/web3.min.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/helper_library.js"></script>  
   <script src="js/popup.js"></script>
 </head>
-<body class="popup">
-  <div class="header ls-1 t-up">
-    <h1>Connect App</h1>
+<body id="app-content" class="popup">
+  <div class="app-header app-header--back-drop">
+    <div class="app-header__contents">
+      <div class="app-header__logo-container">
+        <img class="" src="/img/brand/32.png" height="32">
+        <h3 class="brand-name">Connect</h3>
+      </div>
+    </div>
   </div>
   <div class="content">
     <div id="error"></div>
     <div class="loading"></div>
     <div id="profile" class="profile ls-1"></div>
-    <form class="ls-1" id="singin-form">
+    <form id="singin-form">
+      <h3 class="heading">Signin</h3>
       <p class="form-field">
-        <label>Email:</label>
+        <label>Email Address:</label>
         <input type="email" name="email" placeholder="Email address" value="raza1231@gmail.com" />
       </p>
       <p class="form-field">

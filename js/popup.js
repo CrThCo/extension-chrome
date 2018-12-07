@@ -1,6 +1,6 @@
 $(function(){
   
-  chrome.storage.sync.set({'API': 'http://localhost:5000/v1/'}, function() {})
+  chrome.storage.sync.set({'API': 'http://95.142.171.58:5050/v1/'}, function() {})
   GetUserDetail()
   
   $('#profile').on('click','#unlinkAccount', function(e) {

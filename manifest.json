@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Connect",
   "version": "1.0",
-  "description": "Super alpha extension!",
+  "description": "Connect browser extension.",
   "icons": {
     "128": "img/brand/128.png",
     "48": "img/brand/48.png",
@@ -29,6 +29,6 @@
     "contextMenus",
     "tabs",
     "activeTab",
-    "<all_urls>"
+    "https://twitter.com/*"
   ]
 }

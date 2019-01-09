@@ -28,7 +28,6 @@
     "notifications",
     "contextMenus",
     "tabs",
-    "activeTab",
     "https://twitter.com/*"
   ]
 }
